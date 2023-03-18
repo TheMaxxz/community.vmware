@@ -281,7 +281,6 @@
           - unassing_user_vm_idempotency_result.changed is sameas false
 
     - name: Get VM Managed object ID
-      delegate_to: localhost
       vmware_vm_info:
         vm_name: "{{ virtual_machines.0 }}"
       register: r
@@ -291,7 +290,6 @@
         vm_mo_id: "{{ (r.virtual_machines | map(attribute='moid'))[0] }}"
 
     - name: Assign user to VM with moid with check_mode
-      delegate_to: localhost
       vmware_object_role_permission:
         role: Admin
         principal: "{{ principal }}"
@@ -307,7 +305,6 @@
           - assing_user_vm_with_moid_check_mode_result.changed is sameas true
 
     - name: Assign user to VM with moid
-      delegate_to: localhost
       vmware_object_role_permission:
         role: Admin
         principal: "{{ principal }}"
@@ -322,7 +319,6 @@
           - assing_user_vm_with_moid_result.changed is sameas true
 
     - name: Assign user to VM with moid(idempotency check)
-      delegate_to: localhost
       vmware_object_role_permission:
         role: Admin
         principal: "{{ principal }}"
@@ -337,7 +333,6 @@
           - assing_user_vm_with_moid_idempotency_result.changed is sameas false
 
     - name: Unassign user from VM with moid with check_mode
-      delegate_to: localhost
       vmware_object_role_permission:
         role: Admin
         principal: "{{ principal }}"
@@ -353,7 +348,6 @@
           - unassing_user_vm_with_moid_check_mode_result.changed is sameas true
 
     - name: Unassign user from VM with moid
-      delegate_to: localhost
       vmware_object_role_permission:
         role: Admin
         principal: "{{ principal }}"
@@ -368,7 +362,6 @@
           - unassing_user_vm_with_moid_result.changed is sameas true
 
     - name: Unassign user from VM with moid(idempotency check)
-      delegate_to: localhost
       vmware_object_role_permission:
         role: Admin
         principal: "{{ principal }}"
