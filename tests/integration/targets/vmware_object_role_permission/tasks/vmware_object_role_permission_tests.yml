@@ -193,7 +193,6 @@
         that:
           - unassing_user_vm_folder_with_moid_idempotency_result.changed is sameas false
 
-
     # Here start to VM test
     - name: Assign user to VM with check_mode
       vmware_object_role_permission:
@@ -280,6 +279,108 @@
       assert:
         that:
           - unassing_user_vm_idempotency_result.changed is sameas false
+
+    - name: Get VM Managed object ID
+      delegate_to: localhost
+      vmware_vm_info:
+        vm_name: "{{ virtual_machines.0 }}"
+      register: r
+
+    - name: Set Managed object ID for the given VM
+      set_fact:
+        vm_mo_id: "{{ (r.virtual_machines | map(attribute='moid'))[0] }}"
+
+    - name: Assign user to VM with moid with check_mode
+      delegate_to: localhost
+      vmware_object_role_permission:
+        role: Admin
+        principal: "{{ principal }}"
+        object_moid: "{{ vm_mo_id }}"
+        object_type: VirtualMachine
+        state: present
+      check_mode: true
+      register: assing_user_vm_with_moid_check_mode_result
+
+    - name: Make sure if changed occurs
+      assert:
+        that:
+          - assing_user_vm_with_moid_check_mode_result.changed is sameas true
+
+    - name: Assign user to VM with moid
+      delegate_to: localhost
+      vmware_object_role_permission:
+        role: Admin
+        principal: "{{ principal }}"
+        object_moid: "{{ vm_mo_id }}"
+        object_type: VirtualMachine
+        state: present
+      register: assing_user_vm_with_moid_result
+
+    - name: Make sure if a user assigned to an object with moid
+      assert:
+        that:
+          - assing_user_vm_with_moid_result.changed is sameas true
+
+    - name: Assign user to VM with moid(idempotency check)
+      delegate_to: localhost
+      vmware_object_role_permission:
+        role: Admin
+        principal: "{{ principal }}"
+        object_moid: "{{ vm_mo_id }}"
+        object_type: VirtualMachine
+        state: present
+      register: assing_user_vm_with_moid_idempotency_result
+
+    - name: Make sure if a user assigned to an object with moid doesn't change
+      assert:
+        that:
+          - assing_user_vm_with_moid_idempotency_result.changed is sameas false
+
+    - name: Unassign user from VM with moid with check_mode
+      delegate_to: localhost
+      vmware_object_role_permission:
+        role: Admin
+        principal: "{{ principal }}"
+        object_moid: "{{ vm_mo_id }}"
+        object_type: VirtualMachine
+        state: absent
+      check_mode: true
+      register: unassing_user_vm_with_moid_check_mode_result
+
+    - name: Make sure if changed occurs
+      assert:
+        that:
+          - unassing_user_vm_with_moid_check_mode_result.changed is sameas true
+
+    - name: Unassign user from VM with moid
+      delegate_to: localhost
+      vmware_object_role_permission:
+        role: Admin
+        principal: "{{ principal }}"
+        object_moid: "{{ vm_mo_id }}"
+        object_type: VirtualMachine
+        state: absent
+      register: unassing_user_vm_with_moid_result
+
+    - name: Make sure if unassing a user from an object with moid
+      assert:
+        that:
+          - unassing_user_vm_with_moid_result.changed is sameas true
+
+    - name: Unassign user from VM with moid(idempotency check)
+      delegate_to: localhost
+      vmware_object_role_permission:
+        role: Admin
+        principal: "{{ principal }}"
+        object_moid: "{{ vm_mo_id }}"
+        object_type: VirtualMachine
+        state: absent
+      register: unassing_user_vm_with_moid_idempotency_result
+
+    - name: Make sure if unassing a user from an object with moid doesn't change
+      assert:
+        that:
+          - unassing_user_vm_with_moid_idempotency_result.changed is sameas false
 
     # Here start to Datacenter test
     - name: Assign user to Datacenter with check_mode

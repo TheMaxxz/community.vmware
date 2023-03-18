@@ -9,6 +9,17 @@
       username: "{{ vcenter_username }}"
       password: "{{ vcenter_password }}"
       validate_certs: false
+    vmware_folder_info:
+      hostname: "{{ vcenter_hostname }}"
+      username: "{{ vcenter_username }}"
+      password: "{{ vcenter_password }}"
+      datacenter: "{{ dc1 }}"
+      validate_certs: false
+    vmware_vm_info:
+      hostname: "{{ vcenter_hostname }}"
+      username: "{{ vcenter_username }}"
+      password: "{{ vcenter_password }}"
+      validate_certs: false
   block:
     - name: User friendly role name test
       vmware_object_role_permission:
