@@ -20,6 +20,11 @@
       username: "{{ vcenter_username }}"
       password: "{{ vcenter_password }}"
       validate_certs: false
+    community.vmware.vmware_datacenter_info:
+      hostname: "{{ vcenter_hostname }}"
+      username: "{{ vcenter_username }}"
+      password: "{{ vcenter_password }}"
+      validate_certs: false
   block:
     - name: User friendly role name test
       vmware_object_role_permission:

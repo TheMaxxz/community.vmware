@@ -462,6 +462,101 @@
         that:
           - unassing_user_dc_idempotency_result.changed is sameas false
 
+    - name: Get Datacenter Managed object ID
+      community.vmware.vmware_datacenter_info:
+        datacenter: "{{ dc1 }}"
+      register: r
+
+    - name: Set Managed object ID for the given Datacenter
+      set_fact:
+        dc_mo_id: "{{ (r.datacenter_info | map(attribute='moid'))[0] }}"
+
+    - name: Assign user to Datacenter with moid with check_mode
+      vmware_object_role_permission:
+        role: Admin
+        principal: "{{ principal }}"
+        object_moid: "{{ dc_mo_id }}"
+        object_type: Datacenter
+        state: present
+      check_mode: true
+      register: assing_user_dc_with_moid_check_mode_result
+
+    - name: Make sure if changed occurs
+      assert:
+        that:
+          - assing_user_dc_with_moid_check_mode_result.changed is sameas true
+
+    - name: Assign user to Datacenter with moid
+      vmware_object_role_permission:
+        role: Admin
+        principal: "{{ principal }}"
+        object_moid: "{{ dc_mo_id }}"
+        object_type: Datacenter
+        state: present
+      register: assing_user_dc_with_moid_result
+
+    - name: Make sure if a user assigned to an object with moid
+      assert:
+        that:
+          - assing_user_dc_with_moid_result.changed is sameas true
+
+    - name: Assign user to Datacenter with moid(idempotency check)
+      vmware_object_role_permission:
+        role: Admin
+        principal: "{{ principal }}"
+        object_moid: "{{ dc_mo_id }}"
+        object_type: Datacenter
+        state: present
+      register: assing_user_dc_with_moid_idempotency_result
+
+    - name: Make sure if a user assigned to an object with moid doesn't change
+      assert:
+        that:
+          - assing_user_dc_with_moid_idempotency_result.changed is sameas false
+
+    - name: Unassign user from Datacenter with moid with check_mode
+      vmware_object_role_permission:
+        role: Admin
+        principal: "{{ principal }}"
+        object_moid: "{{ dc_mo_id }}"
+        object_type: Datacenter
+        state: absent
+      check_mode: true
+      register: unassing_user_dc_with_moid_check_mode_result
+
+    - name: Make sure if changed occurs
+      assert:
+        that:
+          - unassing_user_dc_with_moid_check_mode_result.changed is sameas true
+
+    - name: Unassign user from Datacenter with moid
+      vmware_object_role_permission:
+        role: Admin
+        principal: "{{ principal }}"
+        object_moid: "{{ dc_mo_id }}"
+        object_type: Datacenter
+        state: absent
+      register: unassing_user_dc_with_moid_result
+
+    - name: Make sure if unassing a user from an object with moid
+      assert:
+        that:
+          - unassing_user_dc_with_moid_result.changed is sameas true
+
+    - name: Unassign user from Datacenter with moid(idempotency check)
+      vmware_object_role_permission:
+        role: Admin
+        principal: "{{ principal }}"
+        object_moid: "{{ dc_mo_id }}"
+        object_type: Datacenter
+        state: absent
+      register: unassing_user_dc_with_moid_idempotency_result
+
+    - name: Make sure if unassing a user from an object with moid doesn't change
+      assert:
+        that:
+          - unassing_user_dc_with_moid_idempotency_result.changed is sameas false
+
     # Here start to Resource Pool test
     - name: Assign user to ResourcePool with check_mode
       vmware_object_role_permission:
