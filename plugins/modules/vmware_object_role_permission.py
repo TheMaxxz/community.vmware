@@ -43,8 +43,13 @@ options:
   object_name:
     description:
     - The object name to assigned permission.
+    - Required if C(object_moid) is not specified.
     type: str
-    required: true
+  object_moid:
+    description:
+    - The object moid to assigned permission.
+    - Required if C(object_name) is not specified.
+    type: str
   object_type:
     description:
     - The object type being targeted.
@@ -282,15 +287,20 @@ class VMwareObjectRolePermission(PyVmomi):
             getattr(vim, self.params['object_type'])
         except AttributeError:
             self.module.fail_json(msg="Object type %s is not valid." % self.params['object_type'])
-        self.current_obj = find_obj(content=self.content,
-                                    vimtype=[getattr(vim, self.params['object_type'])],
-                                    name=self.params['object_name'])
-
+        
+        if "object_name" in self.params and self.params["object_name"]:
+            self.current_obj = find_obj(self.content,
+                                        vimtype=[getattr(vim, self.params['object_type'])],
+                                        name=self.params['object_name'])
+        elif "object_moid" in self.params and self.params["object_moid"]:
+            self.current_obj = self.find_obj_by_moid(object_type=self.params['object_type'],
+                                                     moid=self.params['object_moid'])
         if self.current_obj is None:
             self.module.fail_json(
                 msg="Specified object %s of type %s was not found."
-                % (self.params['object_name'], self.params['object_type'])
+                % (self.params['object_name'] or self.params['object_moid'], self.params['object_type'])
             )
+
         if self.params['object_type'] == 'DistributedVirtualSwitch':
             msg = "You are applying permissions to a Distributed vSwitch. " \
                   "This will probably fail, since Distributed vSwitches inherits permissions " \
@@ -304,7 +314,8 @@ def main():
     argument_spec.update(
         dict(
             role=dict(required=True, type='str'),
-            object_name=dict(required=True, type='str'),
+            object_name=dict(type='str'),
+            object_moid=dict(type='str'),
             object_type=dict(
                 type='str',
                 default='Folder',
@@ -334,10 +345,12 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True,
         mutually_exclusive=[
-            ['principal', 'group']
+            ['principal', 'group'],
+            ['object_name', 'object_moid']
         ],
         required_one_of=[
-            ['principal', 'group']
+            ['principal', 'group'],
+            ['object_name', 'object_moid']
         ],
     )
 

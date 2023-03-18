@@ -97,6 +97,103 @@
         that:
           - unassing_user_vm_folder_idempotency_result.changed is sameas false
 
+    - name: Get Folder Managed object ID
+      vmware_folder_info:
+      register: r
+
+    - name: Set Managed object ID for the given folder
+      set_fact:
+        folder_mo_id: "{{ (r.flat_folder_info | selectattr('path', 'contains', folder_path) | map(attribute='moid'))[0] }}"
+      vars:
+        folder_path: "{{ f0 }}"
+
+    - name: Assign user to VM folder with moid with check_mode
+      vmware_object_role_permission:
+        role: Admin
+        principal: "{{ principal }}"
+        object_moid: "{{ folder_mo_id }}"
+        object_type: Folder
+        state: present
+      check_mode: true
+      register: assing_user_vm_folder_with_moid_check_mode_result
+
+    - name: Make sure if changed occurs
+      assert:
+        that:
+          - assing_user_vm_folder_with_moid_check_mode_result.changed is sameas true
+
+    - name: Assign user to VM folder with moid
+      vmware_object_role_permission:
+        role: Admin
+        principal: "{{ principal }}"
+        object_moid: "{{ folder_mo_id }}"
+        object_type: Folder
+        state: present
+      register: assing_user_vm_folder_with_moid_result
+
+    - name: Make sure if a user assigned to an object with moid
+      assert:
+        that:
+          - assing_user_vm_folder_with_moid_result.changed is sameas true
+
+    - name: Assign user to VM folder with moid(idempotency check)
+      vmware_object_role_permission:
+        role: Admin
+        principal: "{{ principal }}"
+        object_moid: "{{ folder_mo_id }}"
+        object_type: Folder
+        state: present
+      register: assing_user_vm_folder_with_moid_idempotency_result
+
+    - name: Make sure if a user assigned to an object with moid doesn't change
+      assert:
+        that:
+          - assing_user_vm_folder_with_moid_idempotency_result.changed is sameas false
+
+    - name: Unassign user from VM folder with moid with check_mode
+      vmware_object_role_permission:
+        role: Admin
+        principal: "{{ principal }}"
+        object_moid: "{{ folder_mo_id }}"
+        object_type: Folder
+        state: absent
+      check_mode: true
+      register: unassing_user_vm_folder_with_moid_check_mode_result
+
+    - name: Make sure if changed occurs
+      assert:
+        that:
+          - unassing_user_vm_folder_with_moid_check_mode_result.changed is sameas true
+
+    - name: Unassign user from VM folder with moid
+      vmware_object_role_permission:
+        role: Admin
+        principal: "{{ principal }}"
+        object_moid: "{{ folder_mo_id }}"
+        object_type: Folder
+        state: absent
+      register: unassing_user_vm_folder_with_moid_result
+
+    - name: Make sure if unassing a user from an object with moid
+      assert:
+        that:
+          - unassing_user_vm_folder_with_moid_result.changed is sameas true
+
+    - name: Unassign user from VM folder with moid(idempotency check)
+      vmware_object_role_permission:
+        role: Admin
+        principal: "{{ principal }}"
+        object_moid: "{{ folder_mo_id }}"
+        object_type: Folder
+        state: absent
+      register: unassing_user_vm_folder_with_moid_idempotency_result
+
+    - name: Make sure if unassing a user from an object with moid doesn't change
+      assert:
+        that:
+          - unassing_user_vm_folder_with_moid_idempotency_result.changed is sameas false
+
+
     # Here start to VM test
     - name: Assign user to VM with check_mode
       vmware_object_role_permission:
